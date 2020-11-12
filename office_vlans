@@ -1,92 +1,177 @@
 /*
 .CHANGE_TEMPLATE_DESCRIPTION
-        This script will programmatically create and configure a number of switched virtual interfaces.
-		It takes the first two octets of a given devices ip address combined with the provided switched virtual
-		interfaces and a host portion to configure IP addresses on the newly created vlan interfaces.
+	This change template configures VLANs on
+	Cisco IOS devices.  The template was verified on
+.CHANGE_TEMPLATE_TAGS
+	Cisco, IOS, VLAN
 .PLATFORM_DESCRIPTION
-        Cisco IOS
+	Cisco IOS
+
 .PARAMETER_LABEL @ContextNode
-        NCM node
+	NCM Node
 .PARAMETER_DESCRIPTION @ContextNode
-.PARAMETER_LABEL @Host
-        Host
-.PARAMETER_DESCRIPTION @Host
-        Host Portion of IP Address (i.e., the x in 10.125.55.x)
-.PARAMETER_LABEL @SubMask
-        Subnet Mask
-.PARAMETER_DESCRIPTION @SubMask
-        Subnet Mask to be appended to the IP Addresses Configured for given Switched Virtual Interfaces
-.PARAMETER_LABEL @Desc
-        Description
-.PARAMETER_DESCRIPTION @Desc
-        Switched Virtual Interface Description
-.PARAMETER_LABEL @SVIs
-        SVI interfaces
-.PARAMETER_DESCRIPTION @SVIs
-        Comma separated list of VLAN Interface Numbers.  Only the interface number will need to be provided because the string 'Vlan' will be prepended to all interfaces (i.e. 1,2,4,10).
-.PARAMETER_LABEL @IPHelper
-        IP-Helper Addresses
-.PARAMETER_DESCRIPTION @IPHelper
-        Comma separated list of IP Helper Addresses to be assigned to specified Switched Virtual Interfaces.
+	The node the template will operate on. All
+	templates require this by default. The target
+	node is selected during the first part of the
+	wizard so it will not be available for selection
+	when defining values of variables.
+
+.PARAMETER_LABEL @SiteOctet
+	Site ID
+.PARAMETER_DESCRIPTION @SiteOctet
+	Second octet of the supernet assigned to the site
 
 */
 
-script UpdateIPHelperOnSVIs (
-								NCM.Nodes @ContextNode,
-								string @Host,
-								string @SubMask,
-								string @Desc,
-								string[] @SVIs,
-								string[] @IPHelper
-							)
+script ConfigureVLANsCiscoIOS (
+	NCM.Nodes @ContextNode,
+	string @SiteOctet	)
 {
-	//  Enter configuration mode
+//Define IP addresses per vlan
+string @vlan10IP
+string @vlan11IP
+string @vlan12IP
+string @vlan13IP
+string @vlan14IP
+string @vlan15IP
+string @vlan16IP
+string @vlan17IP
+string @vlan18IP
+string @vlan50IP
+string @vlan51IP
+string @vlan52IP
+string @vlan53IP
+string @vlan54IP
+string @vlan55IP
+string @vlan56IP
+string @vlan70IP
+string @vlan100IP
+string @vlan101IP
+@vlan10IP = '10.' + @SiteOctet + '.10.1'
+@vlan11IP = '10.' + @SiteOctet + '.11.1'
+@vlan12IP = '10.' + @SiteOctet + '.12.1'
+@vlan13IP = '10.' + @SiteOctet + '.13.1'
+@vlan14IP = '10.' + @SiteOctet + '.14.1'
+@vlan15IP = '10.' + @SiteOctet + '.15.1'
+@vlan16IP = '10.' + @SiteOctet + '.16.1'
+@vlan17IP = '10.' + @SiteOctet + '.17.1'
+@vlan18IP = '10.' + @SiteOctet + '.18.1'
+@vlan50IP = '10.' + @SiteOctet + '.50.1'
+@vlan51IP = '10.' + @SiteOctet + '.51.1'
+@vlan52IP = '10.' + @SiteOctet + '.52.1'
+@vlan53IP = '10.' + @SiteOctet + '.53.1'
+@vlan54IP = '10.' + @SiteOctet + '.54.1'
+@vlan55IP = '10.' + @SiteOctet + '.55.1'
+@vlan56IP = '10.' + @SiteOctet + '.56.1'
+@vlan70IP = '10.' + @SiteOctet + '.70.1'
+@vlan100IP = '10.' + @SiteOctet + '.100.1'
+@vlan101IP = '10.' + @SiteOctet + '.101.1'
+//Enter Configuration Mode and apply config
 	CLI
 	{
-		configure terminal
-	}
-    //Gets and stores IP address of configured node
-	string @NodeIP = @ContextNode.AgentIP
-	//Gets and stores first and second octets of node
-	string @Network = GetOctet(@NodeIP, 1)
-	string @Subnet = GetOctet(@NodeIP, 2)
-	//Declare Variables that will have the needed information assembled and assigned to them in the loop
-	string @IntIP
-	string @IntDesc
-	// Loop through and create selected switched virtual interfaces
-	foreach (@SVI in @SVIs)
-	{
-        //Assemble the switched virtual interface and port description variables
-		@IntIP = @Network + '.' + @Subnet + '.' + @SVI + '.' + @Host + ' ' + @SubMask
-		@IntDesc = @Desc + ' VLAN' + @SVI
-		CLI
-        {
-			interface Vlan @SVI
-			no ip helper-address
-			description @IntDesc
-			ip address @IntIP
-			no shut
-		}
-
-		// Loop through IP Helper Addresses and assign to interfaces
-		foreach (@Helper in @IPHelper)
-		{
-			CLI
-			{
-				ip helper-address @Helper
-			}
-        }
-		//Create associated layer 2 vlan and exit interface configuration
-		CLI
-		{
-			vlan @SVI
-			exit
-		}
-    }
-
-	// Exit configuration mode
-	CLI
-	{
-		exit
+	 configure terminal
+     interface vlan 10
+      description GeneralUsers
+      ip address @vlan10IP 255.255.255.0
+     interface vlan 11
+      description IT
+      ip address @vlan11IP 255.255.255.0
+     interface vlan 12
+      description Finance
+      ip address @vlan12IP 255.255.255.0
+     interface vlan 13
+      description CustomerService
+      ip address @vlan13IP 255.255.255.0
+     interface vlan 14
+      description Security
+      ip address @vlan14IP 255.255.255.0
+     interface vlan 15
+      description Facilities
+      ip address @vlan15IP 255.255.255.0
+     interface vlan 16
+      description HR
+      ip address @vlan16IP 255.255.255.0
+     interface vlan 17
+      description Development
+      ip address @vlan17IP 255.255.255.0
+     interface vlan 18
+      description NetEng
+      ip address @vlan18IP 255.255.255.0
+     interface vlan 50
+      description Servers
+      ip address @vlan50IP 255.255.255.0
+     interface vlan 51
+      description VOIP
+      ip address @vlan51IP 255.255.255.0
+     interface vlan 52
+      description Printers
+      ip address @vlan52IP 255.255.255.0
+     interface vlan 53
+      description HuddleVideo
+      ip address @vlan53IP 255.255.255.0
+     interface vlan 54
+      description HuddleVoice
+      ip address @vlan54IP 255.255.255.0
+     interface vlan 55
+      description Display
+      ip address @vlan55IP 255.255.255.0
+     interface vlan 56
+      description Cameras
+      ip address @vlan56IP 255.255.255.0
+     interface vlan 70
+      description CorpWireless
+      ip address @vlan70IP 255.255.255.0
+     interface vlan 100
+      description GuestWireless
+      ip address @vlan100IP 255.255.255.0
+     interface vlan 101
+      description AP_Mgmt
+      ip address @vlan101IP 255.255.255.0
+     vlan 10
+      name GeneralUsers
+     vlan 11
+      name IT
+     vlan 12
+      name Finance
+     vlan 13
+      name CustomerService
+     vlan 14
+      name Security
+     vlan 15
+      name Facilities
+     vlan 16
+      name HR
+     vlan 17
+      name Development
+     vlan 18
+      name NetEng
+     vlan 50
+      name Servers
+     vlan 51
+      name VOIP
+     vlan 52
+      name Printers
+     vlan 53
+      name HuddleVideo
+     vlan 54
+      name HuddleVoice
+     vlan 55
+      name Displays
+     vlan 56
+      name Cameras
+     vlan 70
+      name CorpWireless
+     vlan 71
+      name GuestWireless
+     vlan 100
+      name NetworkMgmt
+     vlan 101
+      name AP_Mgmt
+     vlan 500
+      name RSPAN
+     vlan 666
+      name Native
+     vlan 999
+      name BlackHole
 	}
 }
